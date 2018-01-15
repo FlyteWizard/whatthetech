@@ -5,6 +5,13 @@ import { Transition } from 'react-transition-group';
 
 var usersinroom = 0;
 
+var placeholdercounter = 0;
+
+fire.database().ref("usersinroom").on("value", function(snap) {
+    console.log("Online:" + snap.numChildren());
+    placeholdercounter = snap.numChildren();
+});
+
 const duration = 500;
 
 const defaultStyle = {
@@ -31,7 +38,8 @@ class Start extends Component {
 
     componentWillMount(){
         /* Create reference to users in Firebase Database */
-        fire.database().ref("usersinroom/placeholder").set({donotdelete: "donotdelete"});
+        fire.database().ref("usersinroom/placeholder" + placeholdercounter).set({donotdelete: "donotdelete"});
+        placeholdercounter++;
 
     }
 
@@ -66,9 +74,10 @@ class Start extends Component {
 
       // Add ourselves to presence list when online.
       var listRef = fire.database().ref("usersinroom");
+      
       var presenceRef = fire.database().ref("usersinroom/" + localStorage.getItem("username"));
       if (localStorage.getItem("username") !== "undefined") {
-          fire.database().ref("usersinroom/placeholder").remove();
+          fire.database().ref("usersinroom/placeholder" + placeholdercounter).remove();
       }
 
       presenceRef.on("value", function(snap) {
@@ -101,17 +110,17 @@ class Start extends Component {
                     ...defaultStyle,
                     ...transitionStyles[state]
                 }} className="Start">
-                
+
                 <div className="start-card">
-                    <h3 className="card-title">Waiting for others</h3>
-                    <p className="card-intro">Need min. 10 participants<br />There are currently  </p>
+                    <h3 className="card-title">There are currently:</h3>
+
 
                     <h1 className="num-participants"> {usersinroom} </h1>
 
                         <form className="start-form" onSubmit={this.submitForm.bind(this)}>
                             <input className="start-name" type="text" placeholder="Your display name*" ref={ el => this.inputEl = el } required/>
 
-                            <input className ="start-button" type="submit" value="Start" disabled={usersinroom<10} />
+                            <input className ="start-button" type="submit" value="Start"  />
                         </form>
 
                         {fireRedirect && (
